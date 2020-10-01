@@ -16,7 +16,7 @@ using UnityEngine.Android;
  * native methods that are implemented in VisageTrackerUnityPlugin.
  * It uses tracking data to transform objects that are attached to it in ControllableObjects list.
  */
-public class Tracker : MonoBehaviour
+public partial class Tracker : MonoBehaviour
 {
     #region Properties
 
@@ -193,14 +193,14 @@ public class Tracker : MonoBehaviour
         // Initialize tracker with configuration and MAX_FACES
         IsInit = InitializeTracker(configFilePath);
 
-        // Get current device orientation
-        Orientation = GetDeviceOrientation();
 
         // Open camera in native code
         camInited = OpenCamera(Orientation, camDeviceId, defaultCameraWidth, defaultCameraHeight, isMirrored);
 
         if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.OpenGLCore)
             Debug.Log("Notice: if graphics API is set to OpenGLCore, the texture might not get properly updated.");
+        // Get current device orientation
+        AutoConfigureCamera(); //TODO: reset instead ?
     }
 
 
@@ -226,7 +226,6 @@ public class Tracker : MonoBehaviour
                 texture = null;
             }
 #endif
-            Orientation = GetDeviceOrientation();
 
             // Check if orientation or camera device changed
             if (currentOrientation != Orientation || currentCamDeviceId != camDeviceId || currentMirrored != isMirrored)
@@ -255,6 +254,12 @@ public class Tracker : MonoBehaviour
             //After the track has been preformed on the new frame, the flags for the analysis and recognition are set to true
             frameForAnalysis = true;
             frameForRecog = true;
+
+            // Set main camera field of view based on camera information
+            // Get camera information from native
+            float aspect = ImageWidth / (float) ImageHeight;
+            float yRange = (ImageWidth > ImageHeight) ? 1.0f : 1.0f / aspect;
+            Camera.main.fieldOfView = Mathf.Rad2Deg * 2.0f * Mathf.Atan(yRange / CameraFocus);
         }
 
         RefreshImage();
@@ -378,6 +383,11 @@ public class Tracker : MonoBehaviour
     }
 
 
+    public void AutoConfigureCamera()
+    {
+        Orientation = GetDeviceOrientation();
+    }
+
     /// <summary>
     /// Get current device orientation.
     /// </summary>
@@ -481,6 +491,15 @@ public class Tracker : MonoBehaviour
         //TODO: do in a single call to _get3DData
         VisageTrackerNative._getHeadTranslation(translation, 0);
         VisageTrackerNative._getHeadRotation(rotation, 0);
+        // an example for points 2.1, 8.3 and 8.4
+        const int N = 2;
+        int[] groups = new int[N] {3, 3};
+        int[] indices = new int[N] {5, 6};
+        float[] positions3D = new float[3 * N];
+        int[] defined = new int[N];
+        int[] detected = new int[N];
+        float[] quality = new float[N];
+        VisageTrackerNative._getFeaturePoints3D(N, groups, indices, positions3D, defined, detected, quality, 0);
 
         //TODO: Function
         Translation.x = translation[0];
