@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -33,6 +34,7 @@ public partial class Tracker : MonoBehaviour
     public bool IsInit { get; private set; }
     public float Quality { get; private set; }
     public float FPS { get; private set; }
+    private float Offset { get; set; }
 
     public float IPD
     {
@@ -47,7 +49,6 @@ public partial class Tracker : MonoBehaviour
     private const int MaxTriangles = 2048;
 
     private int VertexNumber;
-    private int TriangleNumber;
     private Vector2[] TexCoords = { };
     private Vector3[] Vertices = new Vector3[MaxVertices];
     private int[] Triangles = { };
@@ -483,7 +484,7 @@ public partial class Tracker : MonoBehaviour
     /// </summary>
     private void UpdateControllableObjects()
     {
-        TriangleNumber = VisageTrackerNative._getFaceModelTriangleCount();
+        VisageTrackerNative._getFaceModelTriangleCount();
         VertexNumber = VisageTrackerNative._getFaceModelVertexCount();
         meshFilter.mesh.Clear();
 
@@ -661,4 +662,49 @@ public partial class Tracker : MonoBehaviour
         }
     }
 #endif
+    public float FaceDistance()
+    {
+        return Translation.magnitude + Offset;
+    }
+
+    public float this[TrackerProperty property]
+    {
+        get
+        {
+            switch (property)
+            {
+                case TrackerProperty.IPD:
+                    return IPD;
+                case TrackerProperty.DistanceOffset:
+                    return Offset;
+                case TrackerProperty.FocalLenght:
+                    return CameraFocus;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(property), property, null);
+            }
+        }
+        set
+        {
+            switch (property)
+            {
+                case TrackerProperty.IPD:
+                    IPD = value;
+                    break;
+                case TrackerProperty.DistanceOffset:
+                    Offset = value;
+                    break;
+                case TrackerProperty.FocalLenght:
+                    CameraFocus = value;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(property), property, null);
+            }
+        }
+    }
+
+    public void ResetValues()
+    {
+        AutoConfigureCamera();
+        Offset = 0;
+    }
 }

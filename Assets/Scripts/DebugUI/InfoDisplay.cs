@@ -22,7 +22,7 @@ public class InfoDisplay : MonoBehaviour
                              $"Quality:{tracker.Quality:P0}\n" +
                              $"FPS:{fpsCounter.FramePerSecond:00}(unity){tracker.FPS:00}(plugin)\n" +
                              $"IPD:{tracker.IPD:0.000}m\n" +
-                             $"DST:{tracker.Translation.magnitude:00.00}m\n" +
+                             $"DST:{tracker.FaceDistance():00.00}m\n" +
                              $"IMG:{tracker.ImageWidth}x{tracker.ImageHeight}px\n" +
                              $"Focal:{tracker.CameraFocus:00.00}cm\n";
     }

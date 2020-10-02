@@ -17,7 +17,7 @@ namespace DefaultNamespace
 
         private void OnClicked()
         {
-            tracker.AutoConfigureCamera();
+            tracker.ResetValues();
         }
     }
 }
