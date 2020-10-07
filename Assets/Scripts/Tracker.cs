@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using UnityEngine;
+using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
 #if PLATFORM_ANDROID && UNITY_2018_3_OR_NEWER
@@ -216,7 +217,7 @@ public partial class Tracker : MonoBehaviour
 
 #if (UNITY_IPHONE || UNITY_ANDROID) && UNITY_EDITOR
         // tracking will not work if the target is set to Android or iOS while in editor
-        return;
+        // return;
 #endif
 
         if (IsTrackerReady())
@@ -241,10 +242,14 @@ public partial class Tracker : MonoBehaviour
                 texture = null;
             }
 
+            Profiler.BeginSample("grabFrame");
             // grab current frame and start face tracking
             VisageTrackerNative._grabFrame();
+            Profiler.EndSample();
 
+            Profiler.BeginSample("track");
             VisageTrackerNative._track();
+            Profiler.EndSample();
             int[] tStatus = new int[1];
             VisageTrackerNative._getTrackerStatus(tStatus);
             TrackStatus = (TrackStatus) tStatus[0];
