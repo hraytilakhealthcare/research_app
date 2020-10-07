@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using DefaultNamespace;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
@@ -32,6 +33,8 @@ public partial class Tracker : MonoBehaviour
     public string ConfigFileOSX;
 
 
+    public float FrameAnalysisDelay { get; set; }
+    public float Smoothing { get; private set; }
     public bool IsInit { get; private set; }
     public float Quality { get; private set; }
     public float FPS { get; private set; }
@@ -102,14 +105,13 @@ public partial class Tracker : MonoBehaviour
     public Button landscapeRight;
     public Button landscapeLeft;
 
-    [HideInInspector] public bool frameForAnalysis;
-    public bool frameForRecog;
     private bool texCoordsStaticLoaded;
 
 #if UNITY_ANDROID
     private AndroidJavaObject androidCameraActivity;
     private bool AppStarted;
     AndroidJavaClass unity;
+    private Timer frameSkipTimer;
 #endif
 
     #endregion
@@ -118,6 +120,8 @@ public partial class Tracker : MonoBehaviour
 
     private void Awake()
     {
+        frameSkipTimer = new Timer();
+        Smoothing = 0.05f;
 #if PLATFORM_ANDROID && UNITY_2018_3_OR_NEWER
         if (!Permission.HasUserAuthorizedPermission(Permission.Camera))
             Permission.RequestUserPermission(Permission.Camera);
@@ -209,8 +213,8 @@ public partial class Tracker : MonoBehaviour
     private void Update()
     {
         //signals analysis and recognition to stop if camera or tracker are not initialized and until new frame and tracking data are obtained
-        frameForAnalysis = false;
-        frameForRecog = false;
+        frameSkipTimer.Update(Time.time);
+        frameSkipTimer.SetDuration(FrameAnalysisDelay);
 
         if (!IsTrackerReady())
             return;
@@ -247,9 +251,14 @@ public partial class Tracker : MonoBehaviour
             VisageTrackerNative._grabFrame();
             Profiler.EndSample();
 
-            Profiler.BeginSample("track");
-            VisageTrackerNative._track();
-            Profiler.EndSample();
+            if (frameSkipTimer.IsElapsed())
+            {
+                Profiler.BeginSample("track");
+                VisageTrackerNative._track();
+                Profiler.EndSample();
+                frameSkipTimer.Reset();
+            }
+
             int[] tStatus = new int[1];
             VisageTrackerNative._getTrackerStatus(tStatus);
             TrackStatus = (TrackStatus) tStatus[0];
@@ -258,8 +267,6 @@ public partial class Tracker : MonoBehaviour
 
 
             //After the track has been preformed on the new frame, the flags for the analysis and recognition are set to true
-            frameForAnalysis = true;
-            frameForRecog = true;
 
             // Set main camera field of view based on camera information
             // Get camera information from native
@@ -684,6 +691,10 @@ public partial class Tracker : MonoBehaviour
                     return Offset;
                 case TrackerProperty.FocalLenght:
                     return CameraFocus;
+                case TrackerProperty.Smoothing:
+                    return Smoothing;
+                case TrackerProperty.FrameAnalysisDelay:
+                    return FrameAnalysisDelay;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(property), property, null);
             }
@@ -701,11 +712,18 @@ public partial class Tracker : MonoBehaviour
                 case TrackerProperty.FocalLenght:
                     CameraFocus = value;
                     break;
+                case TrackerProperty.Smoothing:
+                    Smoothing = value;
+                    break;
+                case TrackerProperty.FrameAnalysisDelay:
+                    FrameAnalysisDelay = value;
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(property), property, null);
             }
         }
     }
+
 
     public void ResetValues()
     {

@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class VisagePosition : MonoBehaviour
 {
-    [SerializeField] private float smoothTime = .05f;
     private Tracker tracker;
     private TextMesh textMesh;
     private Vector3 linearVelocity;
@@ -24,8 +23,18 @@ public class VisagePosition : MonoBehaviour
 
     private void MoveTo(Tracker aTracker)
     {
-        Vector3 position = Vector3.SmoothDamp(transform.position, aTracker.Translation, ref linearVelocity, smoothTime);
-        currentRotation = SmoothDampAsAngle(currentRotation, aTracker.Rotation, ref angularVelocity, smoothTime);
+        Vector3 position = Vector3.SmoothDamp(
+            transform.position,
+            aTracker.Translation,
+            ref linearVelocity,
+            aTracker.Smoothing
+        );
+        currentRotation = SmoothDampAsAngle(
+            currentRotation,
+            aTracker.Rotation,
+            ref angularVelocity,
+            aTracker.Smoothing
+        );
         transform.SetPositionAndRotation(position, Quaternion.Euler(currentRotation));
     }
 
