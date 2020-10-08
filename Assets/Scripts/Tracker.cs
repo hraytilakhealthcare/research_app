@@ -111,8 +111,8 @@ public partial class Tracker : MonoBehaviour
     private AndroidJavaObject androidCameraActivity;
     private bool AppStarted;
     AndroidJavaClass unity;
-    private Timer frameSkipTimer;
 #endif
+    private Timer frameSkipTimer;
 
     #endregion
 
