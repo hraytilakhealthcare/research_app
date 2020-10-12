@@ -141,27 +141,33 @@ public class Tracker : MonoBehaviour
         Debug.Log("Start end");
     }
 
-    private string ComputeConfigFilePath()
+    private const string ConfigFolder = "Visage Tracker";
+    private const string ConfigFileName = "Head Tracker.cfg";
+
+    private static string ComputeConfigFilePath()
     {
-        string configFilePath = Application.streamingAssetsPath + "/" + configFileStandalone;
+        string configFilePath;
 
         switch (Application.platform)
         {
             case RuntimePlatform.IPhonePlayer:
-                configFilePath = "Data/Raw/Visage Tracker/" + configFileIOS;
+                configFilePath = $"Data/Raw/{ConfigFolder}/{ConfigFileName}";
                 break;
             case RuntimePlatform.Android:
-                configFilePath = Application.persistentDataPath + "/" + configFileAndroid;
+                configFilePath = Application.persistentDataPath + "/" + ConfigFileName;
                 break;
             case RuntimePlatform.OSXPlayer:
-                configFilePath = Application.dataPath + "/Resources/Data/StreamingAssets/Visage Tracker/" +
-                                 configFileOsx;
+                configFilePath =
+                    $"{Application.dataPath}/Resources/Data/StreamingAssets/{ConfigFolder}/{ConfigFileName}";
                 break;
             case RuntimePlatform.OSXEditor:
-                configFilePath = Application.dataPath + "/StreamingAssets/Visage Tracker/" + configFileOsx;
+                configFilePath = $"{Application.dataPath}/StreamingAssets/{ConfigFolder}/{ConfigFileName}";
                 break;
             case RuntimePlatform.WindowsEditor:
-                configFilePath = Application.streamingAssetsPath + "/" + configFileEditor;
+                configFilePath = $"{Application.streamingAssetsPath}/{ConfigFolder}/{ConfigFileName}";
+                break;
+            default:
+                configFilePath = $"{Application.streamingAssetsPath}/{ConfigFolder}/{ConfigFileName}";
                 break;
         }
 
