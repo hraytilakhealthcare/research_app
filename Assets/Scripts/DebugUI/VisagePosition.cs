@@ -25,13 +25,13 @@ public class VisagePosition : MonoBehaviour
     {
         Vector3 position = Vector3.SmoothDamp(
             transform.position,
-            aTracker.Translation,
+            aTracker.position,
             ref linearVelocity,
             aTracker.Smoothing
         );
         currentRotation = SmoothDampAsAngle(
             currentRotation,
-            aTracker.Rotation,
+            aTracker.rotation,
             ref angularVelocity,
             aTracker.Smoothing
         );

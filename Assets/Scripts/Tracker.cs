@@ -1,36 +1,28 @@
 using System;
-using System.IO;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using DefaultNamespace;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
-using UnityEngine.UI;
 #if PLATFORM_ANDROID && UNITY_2018_3_OR_NEWER
+using System.IO;
 using UnityEngine.Android;
 
 #endif
 
 
-/** Class that implements the behavior of tracking application.
- *
- * This is the core class that shows how to use visage|SDK capabilities in Unity. It connects with visage|SDK through calls to
- * native methods that are implemented in VisageTrackerUnityPlugin.
- * It uses tracking data to transform objects that are attached to it in ControllableObjects list.
- */
-public partial class Tracker : MonoBehaviour
+public class Tracker : MonoBehaviour
 {
     #region Properties
 
     [Header("Tracker configuration settings")]
     //Tracker configuration file name.
-    public string ConfigFileEditor;
+    public string configFileEditor;
 
-    public string ConfigFileStandalone;
-    public string ConfigFileIOS;
-    public string ConfigFileAndroid;
-    public string ConfigFileOSX;
+    public string configFileStandalone;
+    public string configFileIOS;
+    public string configFileAndroid;
+    public string configFileOsx;
 
 
     public float FrameAnalysisDelay { get; set; }
@@ -46,34 +38,11 @@ public partial class Tracker : MonoBehaviour
         set => VisageTrackerNative._setIPD(value);
     }
 
-    [Header("Tracking settings")]
-    // Mesh information
-    private const int MaxVertices = 1024;
-
-    private const int MaxTriangles = 2048;
-
-    private int VertexNumber;
-    private Vector2[] TexCoords = { };
-    private Vector3[] Vertices = new Vector3[MaxVertices];
-    private int[] Triangles = { };
-    private float[] vertices = new float[MaxVertices * 3];
-    private int[] triangles = new int[MaxTriangles * 3];
-    private float[] texCoords = new float[MaxVertices * 2];
-    private MeshFilter meshFilter;
-    private Vector2[] modelTexCoords;
-
-    [Header("Tiger texture mapping file")] public TextAsset TexCoordinatesFile;
-
-    [Header("Tracker output data info")] public Vector3 Translation = new Vector3();
-    public Vector3 Rotation = new Vector3();
+    public Vector3 position;
+    public Vector3 rotation;
     public TrackStatus TrackStatus = 0; //TODO: Enum instead
-    private float[] translation = new float[3];
-    private float[] rotation = new float[3];
 
     [Header("Camera settings")] public Material CameraViewMaterial;
-    public Shader CameraViewShaderRGBA;
-    public Shader CameraViewShaderBGRA;
-    public Shader CameraViewShaderUnlit;
     public float CameraFocus;
     public int Orientation;
     private int currentOrientation;
@@ -93,19 +62,11 @@ public partial class Tracker : MonoBehaviour
 #if UNITY_ANDROID
     private TextureFormat TexFormat = TextureFormat.RGB24;
 #else
-	private TextureFormat TexFormat = TextureFormat.RGBA32;
+    private TextureFormat TexFormat = TextureFormat.RGBA32;
 #endif
     private Texture2D texture;
     private Color32[] texturePixels;
     private GCHandle texturePixelsHandle;
-
-    [Header("GUI button settings")] public Button trackingButton;
-    public Button portrait;
-    public Button portraitUpside;
-    public Button landscapeRight;
-    public Button landscapeLeft;
-
-    private bool texCoordsStaticLoaded;
 
 #if UNITY_ANDROID
     private AndroidJavaObject androidCameraActivity;
@@ -121,12 +82,9 @@ public partial class Tracker : MonoBehaviour
     private void Awake()
     {
         frameSkipTimer = new Timer();
-        Smoothing = 0.05f;
-#if PLATFORM_ANDROID && UNITY_2018_3_OR_NEWER
+#if PLATFORM_ANDROID
         if (!Permission.HasUserAuthorizedPermission(Permission.Camera))
             Permission.RequestUserPermission(Permission.Camera);
-#endif
-#if UNITY_ANDROID
         Unzip();
 #endif
 
@@ -162,6 +120,7 @@ public partial class Tracker : MonoBehaviour
         //NOTE: platforms other than Windows expect absolute or relative path to the license file
         VisageTrackerNative._initializeLicense(licenseFilePath + LicenseString);
 #endif
+        Debug.Log("Awake end");
     }
 
 
@@ -169,50 +128,49 @@ public partial class Tracker : MonoBehaviour
     {
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
         Application.targetFrameRate = 60;
-        // Create an empty mesh and load tiger texture coordinates
-        meshFilter = GetComponent<MeshFilter>();
-        meshFilter.mesh = new Mesh();
 
-        // Set configuration file path and name depending on a platform
-        string configFilePath = Application.streamingAssetsPath + "/" + ConfigFileStandalone;
+        Debug.Log("Starting tracker init");
+        IsInit = InitializeTracker(ComputeConfigFilePath());
+        Debug.Log("Done tracker init");
 
-        switch (Application.platform)
-        {
-            case RuntimePlatform.IPhonePlayer:
-                configFilePath = "Data/Raw/Visage Tracker/" + ConfigFileIOS;
-                break;
-            case RuntimePlatform.Android:
-                configFilePath = Application.persistentDataPath + "/" + ConfigFileAndroid;
-                break;
-            case RuntimePlatform.OSXPlayer:
-                configFilePath = Application.dataPath + "/Resources/Data/StreamingAssets/Visage Tracker/" +
-                                 ConfigFileOSX;
-                break;
-            case RuntimePlatform.OSXEditor:
-                configFilePath = Application.dataPath + "/StreamingAssets/Visage Tracker/" + ConfigFileOSX;
-                break;
-            case RuntimePlatform.WindowsEditor:
-                configFilePath = Application.streamingAssetsPath + "/" + ConfigFileEditor;
-                break;
-        }
-
-        // Initialize tracker with configuration and MAX_FACES
-        IsInit = InitializeTracker(configFilePath);
-
-
-        // Open camera in native code
         camInited = OpenCamera(Orientation, camDeviceId, defaultCameraWidth, defaultCameraHeight, isMirrored);
 
         if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.OpenGLCore)
             Debug.Log("Notice: if graphics API is set to OpenGLCore, the texture might not get properly updated.");
-        // Get current device orientation
         AutoConfigureCamera(); //TODO: reset instead ?
+        Debug.Log("Start end");
+    }
+
+    private string ComputeConfigFilePath()
+    {
+        string configFilePath = Application.streamingAssetsPath + "/" + configFileStandalone;
+
+        switch (Application.platform)
+        {
+            case RuntimePlatform.IPhonePlayer:
+                configFilePath = "Data/Raw/Visage Tracker/" + configFileIOS;
+                break;
+            case RuntimePlatform.Android:
+                configFilePath = Application.persistentDataPath + "/" + configFileAndroid;
+                break;
+            case RuntimePlatform.OSXPlayer:
+                configFilePath = Application.dataPath + "/Resources/Data/StreamingAssets/Visage Tracker/" +
+                                 configFileOsx;
+                break;
+            case RuntimePlatform.OSXEditor:
+                configFilePath = Application.dataPath + "/StreamingAssets/Visage Tracker/" + configFileOsx;
+                break;
+            case RuntimePlatform.WindowsEditor:
+                configFilePath = Application.streamingAssetsPath + "/" + configFileEditor;
+                break;
+        }
+
+        return configFilePath;
     }
 
 
     private void Update()
     {
-        //signals analysis and recognition to stop if camera or tracker are not initialized and until new frame and tracking data are obtained
         frameSkipTimer.Update(Time.time);
         frameSkipTimer.SetDuration(FrameAnalysisDelay);
 
@@ -281,10 +239,6 @@ public partial class Tracker : MonoBehaviour
         {
             //TODO: here
             UpdateControllableObjects();
-            if (!texCoordsStaticLoaded)
-            {
-                texCoordsStaticLoaded = GetTextureCoordinates(out modelTexCoords);
-            }
         }
     }
 
@@ -299,20 +253,22 @@ public partial class Tracker : MonoBehaviour
 #if UNITY_ANDROID
         androidCameraActivity.Call("closeCamera");
 #else
-		camInited = !(VisageTrackerNative._closeCamera());
+        camInited = !(VisageTrackerNative._closeCamera());
 #endif
     }
 
 #if UNITY_IPHONE
-	void OnApplicationPause(bool pauseStatus) {
-		if(pauseStatus){
-			camInited = !(VisageTrackerNative._closeCamera());
-		}
-		else
-		{
-			camInited = OpenCamera(Orientation, camDeviceId, defaultCameraWidth, defaultCameraHeight, isMirrored);
-		}
-	}
+    private void OnApplicationPause(bool pauseStatus)
+    {
+        if (pauseStatus)
+        {
+            camInited = !(VisageTrackerNative._closeCamera());
+        }
+        else
+        {
+            camInited = OpenCamera(Orientation, camDeviceId, defaultCameraWidth, defaultCameraHeight, isMirrored);
+        }
+    }
 #endif
 
     /// <summary>
@@ -329,7 +285,6 @@ public partial class Tracker : MonoBehaviour
 #endif
 
 #if UNITY_ANDROID
-
         Shader shader = Shader.Find("Unlit/Texture");
         CameraViewMaterial.shader = shader;
 
@@ -343,7 +298,7 @@ public partial class Tracker : MonoBehaviour
 		CameraViewMaterial.shader = shader;
 #else
         Shader shader = Shader.Find("Custom/BGRATex");
-		CameraViewMaterial.shader = shader;
+        CameraViewMaterial.shader = shader;
 #endif
 
         VisageTrackerNative._initTracker(config, 1);
@@ -401,17 +356,6 @@ public partial class Tracker : MonoBehaviour
         Orientation = GetDeviceOrientation();
     }
 
-    /// <summary>
-    /// Get current device orientation.
-    /// </summary>
-    /// <returns>Returns an integer:
-    /// <list type="bullet">
-    /// <item><term>0 : DeviceOrientation.Portrait</term></item>
-    /// <item><term>1 : DeviceOrientation.LandscapeRight</term></item>
-    /// <item><term>2 : DeviceOrientation.PortraitUpsideDown</term></item>
-    /// <item><term>3 : DeviceOrientation.LandscapeLeft</term></item>
-    /// </list>
-    /// </returns>
     private int GetDeviceOrientation()
     {
         int devOrientation;
@@ -429,41 +373,34 @@ public partial class Tracker : MonoBehaviour
         else
             devOrientation = Orientation;
 #else
-		if (Input.deviceOrientation == DeviceOrientation.Portrait)
-			devOrientation = 0;
-		else if (Input.deviceOrientation == DeviceOrientation.PortraitUpsideDown)
-			devOrientation = 2;
-		else if (Input.deviceOrientation == DeviceOrientation.LandscapeLeft)
-			devOrientation = 3;
-		else if (Input.deviceOrientation == DeviceOrientation.LandscapeRight)
-			devOrientation = 1;
-		else if (Input.deviceOrientation == DeviceOrientation.FaceUp)
-			devOrientation = Orientation;
-        else if (Input.deviceOrientation == DeviceOrientation.Unknown)
-            devOrientation = Orientation;
-        else
-			devOrientation = 0;
+        switch (Input.deviceOrientation)
+        {
+            case DeviceOrientation.Portrait:
+                devOrientation = 0;
+                break;
+            case DeviceOrientation.PortraitUpsideDown:
+                devOrientation = 2;
+                break;
+            case DeviceOrientation.LandscapeLeft:
+                devOrientation = 3;
+                break;
+            case DeviceOrientation.LandscapeRight:
+                devOrientation = 1;
+                break;
+            case DeviceOrientation.FaceUp:
+            case DeviceOrientation.Unknown:
+                devOrientation = Orientation;
+                break;
+            default:
+                devOrientation = 0;
+                break;
+        }
 #endif
 
         return devOrientation;
     }
 
 
-    /// <summary>
-    /// Open camera from native code.
-    /// </summary>
-    /// <param name="orientation">Current device orientation:
-    /// <list type="bullet">
-    /// <item><term>0 : DeviceOrientation.Portrait</term></item>
-    /// <item><term>1 : DeviceOrientation.LandscapeRight</term></item>
-    /// <item><term>2 : DeviceOrientation.PortraitUpsideDown</term></item>
-    /// <item><term>3 : DeviceOrientation.LandscapeLeft</term></item>
-    /// </list>
-    /// </param>
-    /// <param name="camDeviceId">ID of the camera device.</param>
-    /// <param name="width">Desired width in pixels (pass -1 for default 800).</param>
-    /// <param name="height">Desired width in pixels (pass -1 for default 600).</param>
-    /// <param name="isMirrored">true if frame is to be mirrored, false otherwise.</param>
     bool OpenCamera(int orientation, int cameraDeviceId, int width, int height, int isMirrored)
     {
 #if UNITY_ANDROID
@@ -491,86 +428,34 @@ public partial class Tracker : MonoBehaviour
 #endif
     }
 
-    /// <summary>
-    /// Apply data from the tracker to controllable objects (glasses, tiger mesh).
-    /// </summary>
     private void UpdateControllableObjects()
     {
-        VisageTrackerNative._getFaceModelTriangleCount();
-        VertexNumber = VisageTrackerNative._getFaceModelVertexCount();
-        meshFilter.mesh.Clear();
-
-        // update translation and rotation
         //TODO: do in a single call to _get3DData
-        VisageTrackerNative._getHeadTranslation(translation, 0);
-        VisageTrackerNative._getHeadRotation(rotation, 0);
-        // an example for points 2.1, 8.3 and 8.4
-        const int N = 2;
-        int[] groups = new int[N] {3, 3};
-        int[] indices = new int[N] {5, 6};
-        float[] positions3D = new float[3 * N];
-        int[] defined = new int[N];
-        int[] detected = new int[N];
-        float[] quality = new float[N];
-        VisageTrackerNative._getFeaturePoints3D(N, groups, indices, positions3D, defined, detected, quality, 0);
-
-        //TODO: Function
-        Translation.x = translation[0];
-        Translation.y = translation[1];
-        Translation.z = translation[2];
-
-        Rotation.x = rotation[0];
-
-        if ((Application.platform == RuntimePlatform.WindowsEditor ||
-             Application.platform == RuntimePlatform.WindowsPlayer) && isMirrored == 1)
-        {
-            Rotation.y = -rotation[1];
-            Rotation.z = -rotation[2];
-        }
-        else
-        {
-            Rotation.y = rotation[1];
-            Rotation.z = rotation[2];
-        }
-
-        Transform3DData();
-        //Face effect tiger
-        {
-            // VisageTrackerNative._getFaceModelVertices(vertices, 0);
-            // VisageTrackerNative._getFaceModelTriangles(triangles, 0);
-        }
+        float[] positionCoords = new float[3];
+        float[] rotationCoords = new float[3];
+        VisageTrackerNative._getHeadTranslation(positionCoords, 0);
+        VisageTrackerNative._getHeadRotation(rotationCoords, 0);
+        SetPositionAndRotation(positionCoords, rotationCoords);
     }
 
-    /// <summary>
-    /// Helper function for transforming data obtained from tracker
-    /// </summary>
-    private void Transform3DData()
+    private void SetPositionAndRotation(float[] positionCoords, float[] rotationCoords)
     {
-        //TODO: replace by Mathf.PI ?
-        Translation.x *= -1;
-        Rotation.x = 180.0f * Rotation.x / 3.14f;
-        Rotation.y += 3.14f;
-        Rotation.y = 180.0f * -Rotation.y / 3.14f;
-        Rotation.z = 180.0f * -Rotation.z / 3.14f;
-    }
-
-    /// <summary>
-    /// Loads static texture coordinates from the plugin.
-    /// </summary>
-    /// <returns>Returns true on successful load, false otherwise.</returns>
-    bool GetTextureCoordinates(out Vector2[] texCoords)
-    {
-        int texCoordsNumber;
-        float[] buffer = new float[1024];
-        VisageTrackerNative._getTexCoordsStatic(buffer, out texCoordsNumber);
-
-        texCoords = new Vector2[texCoordsNumber / 2];
-        for (int i = 0; i < texCoordsNumber / 2; i++)
-        {
-            texCoords[i] = new Vector2(buffer[i * 2], buffer[i * 2 + 1]);
-        }
-
-        return texCoordsNumber > 0;
+        Assert.AreEqual(3, positionCoords.Length);
+        Assert.AreEqual(3, rotationCoords.Length);
+        position = new Vector3(
+            -positionCoords[0],
+            positionCoords[1],
+            positionCoords[2]
+        );
+        int mirrorFactor = (Application.platform == RuntimePlatform.WindowsEditor ||
+                            Application.platform == RuntimePlatform.WindowsPlayer) && isMirrored == 1
+            ? -1
+            : 1;
+        rotation = new Vector3(
+            -rotationCoords[0] * Mathf.Rad2Deg,
+            mirrorFactor * -rotationCoords[1] * Mathf.Rad2Deg,
+            mirrorFactor * rotationCoords[2] * Mathf.Rad2Deg
+        );
     }
 
     //TODO: Android specific below: move to another file ?
@@ -676,7 +561,7 @@ public partial class Tracker : MonoBehaviour
 #endif
     public float FaceDistance()
     {
-        return Translation.magnitude + Offset;
+        return position.magnitude + Offset;
     }
 
     public float this[TrackerProperty property]
@@ -729,5 +614,7 @@ public partial class Tracker : MonoBehaviour
     {
         AutoConfigureCamera();
         Offset = 0;
+        Smoothing = 0.05f;
+        frameSkipTimer.SetDuration(0);
     }
 }
