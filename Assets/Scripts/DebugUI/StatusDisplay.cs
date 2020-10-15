@@ -8,29 +8,27 @@ namespace DefaultNamespace
     public class StatusDisplay : MonoBehaviour
     {
         private Image image;
-        private Tracker tracker;
 
         private void Awake()
         {
-            tracker = FindObjectOfType<Tracker>();
             image = GetComponent<Image>();
         }
 
         private void Update()
         {
-            image.color = ColorFromStatus(tracker.TrackStatus);
+            image.color = ColorFromStatus(VisageTrackerApi.Status.TrackingStatus);
         }
 
-        private Color ColorFromStatus(TrackStatus trackerTrackStatus)
+        private Color ColorFromStatus(VisageTrackerApi.TrackStatus status)
         {
-            switch (tracker.TrackStatus)
+            switch (status)
             {
-                case TrackStatus.OFF:
+                case VisageTrackerApi.TrackStatus.Off:
                     return Color.red;
-                case TrackStatus.OK:
+                case VisageTrackerApi.TrackStatus.Ok:
                     return Color.green;
-                case TrackStatus.RECOVERING:
-                case TrackStatus.INIT:
+                case VisageTrackerApi.TrackStatus.Recovering:
+                case VisageTrackerApi.TrackStatus.Init:
                     return Color.yellow;
                 default:
                     throw new ArgumentOutOfRangeException();

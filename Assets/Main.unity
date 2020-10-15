@@ -216,7 +216,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 100}
+  m_LocalPosition: {x: 0, y: 0, z: 200}
   m_LocalScale: {x: -1, y: 1, z: 1}
   m_Children:
   - {fileID: 2071318438}
@@ -470,23 +470,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a85f702a76a89204f905433030e99108, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  configFileEditor: Visage Tracker/Head Tracker.cfg
-  configFileStandalone: Head Tracker.cfg
-  configFileIOS: Head Tracker.cfg
-  configFileAndroid: Head Tracker.cfg
-  configFileOsx: Head Tracker.cfg
-  position: {x: 0, y: 0, z: 0}
-  rotation: {x: 0, y: 0, z: 0}
-  TrackStatus: 0
   CameraViewMaterial: {fileID: 2100000, guid: 814957a53e94a244da1b20b8c02a40b8, type: 2}
   CameraFocus: 0
   Orientation: 0
-  isMirrored: 1
-  camDeviceId: 0
-  defaultCameraWidth: 800
-  defaultCameraHeight: 600
-  ImageWidth: 800
-  ImageHeight: 600
   TexWidth: 512
   TexHeight: 512
 --- !u!1001 &56
@@ -503,6 +489,10 @@ PrefabInstance:
     - target: {fileID: 100000, guid: ea3bdadcce797bb4bb2ca376295c3d3f, type: 3}
       propertyPath: m_Name
       value: Video Plane
+      objectReference: {fileID: 0}
+    - target: {fileID: 100000, guid: ea3bdadcce797bb4bb2ca376295c3d3f, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: ea3bdadcce797bb4bb2ca376295c3d3f, type: 3}
       propertyPath: m_LocalRotation.x
@@ -1900,7 +1890,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2053201fd7244fbdb2029f0cc8a1ed9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  property: 2
+  property: 4
 --- !u!1 &754750443
 GameObject:
   m_ObjectHideFlags: 0
@@ -2240,7 +2230,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79d6283a27834478a9da2a4ce527bf6e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tracker: {fileID: 53}
 --- !u!1 &977853732
 GameObject:
   m_ObjectHideFlags: 0
@@ -2293,7 +2282,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2053201fd7244fbdb2029f0cc8a1ed9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  property: 3
+  property: 2
 --- !u!1 &978309518
 GameObject:
   m_ObjectHideFlags: 0
@@ -3649,7 +3638,7 @@ Transform:
   m_GameObject: {fileID: 1660735644}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.05, y: 0.05, z: 0.05}
+  m_LocalScale: {x: 0.25, y: 0.25, z: 0.25}
   m_Children:
   - {fileID: 1109426172}
   - {fileID: 1563538425}
@@ -3710,7 +3699,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2053201fd7244fbdb2029f0cc8a1ed9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  property: 4
+  property: 3
 --- !u!1 &1779866889
 GameObject:
   m_ObjectHideFlags: 0
@@ -4221,7 +4210,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2053201fd7244fbdb2029f0cc8a1ed9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  property: 1
+  property: 0
 --- !u!1 &1923418422
 GameObject:
   m_ObjectHideFlags: 0
@@ -4420,7 +4409,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2053201fd7244fbdb2029f0cc8a1ed9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  property: 0
+  property: 1
 --- !u!1 &2071318437
 GameObject:
   m_ObjectHideFlags: 0

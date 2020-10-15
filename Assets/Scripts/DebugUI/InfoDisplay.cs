@@ -5,7 +5,6 @@ using UnityEngine.UI;
 // ReSharper disable once InconsistentNaming
 public class InfoDisplay : MonoBehaviour
 {
-    public Tracker tracker;
     protected Text textComponent;
     private FpsCounter fpsCounter;
 
@@ -17,13 +16,15 @@ public class InfoDisplay : MonoBehaviour
 
     private void Update()
     {
-        textComponent.text = $"Init:{tracker.IsInit}\t" +
-                             $"Status:{tracker.TrackStatus}\n" +
-                             $"Quality:{tracker.Quality:P0}\n" +
-                             $"FPS:{fpsCounter.FramePerSecond:00}(unity){tracker.FPS:00}(plugin)\n" +
-                             $"IPD:{tracker.IPD:0.000}m\n" +
-                             $"DST:{tracker.FaceDistance():00.00}m\n" +
-                             $"IMG:{tracker.ImageWidth}x{tracker.ImageHeight}px\n" +
-                             $"Focal:{tracker.CameraFocus:00.00}cm\n";
+        VisageTrackerApi.CameraInfo cameraInfo = VisageTrackerApi.LastCameraInfo;
+        VisageTrackerApi.TrackerStatus status = VisageTrackerApi.Status;
+        textComponent.text = $"Init:{VisageTrackerApi.IsInit}\t" +
+                             $"Status:{status.TrackingStatus}\n" +
+                             $"Quality:{status.Quality:P0}\n" +
+                             $"FPS:{fpsCounter.FramePerSecond:00}(unity){status.FrameRate:00}(plugin)\n" +
+                             // $"IPD:{tracker.IPD:0.000}m\n" +
+                             $"DST:{VisageTrackerApi.LastHeadTransform.Position.magnitude:00.00}m\n" +
+                             $"IMG:{cameraInfo.ImageSize.x}x{cameraInfo.ImageSize.y}px\n" +
+                             $"Focal:{cameraInfo.FocalLenght:00.00}cm\n";
     }
 }
