@@ -30,9 +30,12 @@ public static class VisageTrackerApi
     public static void Init()
     {
         IsInit = AskCameraPermission() && ActivateLicense() && InitFromConfigFile() && OpenCamera();
-        if (IsInit) LastCameraInfo = GetCameraInfo();
     }
 
+    public static void UpdateCameraInfo()
+    {
+        LastCameraInfo = GetCameraInfo();
+    }
 
     /// <returns>returns specific shader with correct pixel ordering</returns>
     public static Shader GetShaderForPlatform()

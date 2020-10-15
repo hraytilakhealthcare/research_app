@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
+
 #if PLATFORM_ANDROID && UNITY_2018_3_OR_NEWER
 using System.IO;
 using UnityEngine.Android;
@@ -55,7 +56,13 @@ public class Tracker : MonoBehaviour
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
         Application.targetFrameRate = 60;
         yield return new WaitForSeconds(10);
+        Debug.Log("Init Tracker Start");
         IsInit = InitializeTracker();
+        Debug.Log("Init Tracker End");
+        yield return new WaitForSeconds(10);
+        Debug.Log("Init CamInfo Start");
+        VisageTrackerApi.UpdateCameraInfo();
+        Debug.Log("Init CamInfo End");
         if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.OpenGLCore)
             Debug.Log("Notice: if graphics API is set to OpenGLCore, the texture might not get properly updated.");
     }
