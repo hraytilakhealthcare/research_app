@@ -99,6 +99,7 @@ public static class VisageTrackerApi
 
     public static void Release()
     {
+        if (Application.isEditor) return;
 #if UNITY_ANDROID
         androidCameraActivity.Call("closeCamera");
 #else
@@ -132,6 +133,7 @@ public static class VisageTrackerApi
 
     private static TrackerStatus GetTrackerStatus()
     {
+        if (Application.isEditor) return new TrackerStatus();
         int[] tStatus = new int[1];
         VisageTrackerNative._getTrackerStatus(tStatus);
         return new TrackerStatus
@@ -145,6 +147,7 @@ public static class VisageTrackerApi
 
     private static CameraInfo GetCameraInfo()
     {
+        if (Application.isEditor) return new CameraInfo();
         VisageTrackerNative._getCameraInfo(out float focus, out int w, out int h);
         return new CameraInfo
         {
@@ -173,6 +176,7 @@ public static class VisageTrackerApi
 
     private static bool ActivateLicense()
     {
+        if (Application.isEditor) return true;
         try
         {
             string computeLicensePath = ComputeLicensePath();

@@ -26,8 +26,11 @@ public class Tracker : MonoBehaviour
 
     public float IPD
     {
-        get => VisageTrackerNative._getIPD();
-        set => VisageTrackerNative._setIPD(value);
+        get => Application.isEditor ? 0 : VisageTrackerNative._getIPD();
+        set
+        {
+            if (Application.isEditor) VisageTrackerNative._setIPD(value);
+        }
     }
 
     public Material CameraViewMaterial;
@@ -55,14 +58,11 @@ public class Tracker : MonoBehaviour
         frameSkipTimer = new Timer();
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
         Application.targetFrameRate = 60;
-        yield return new WaitForSeconds(10);
-        Debug.Log("Init Tracker Start");
+        //TODO: try to reduce durations and see what happens on iOS
+        yield return new WaitForSeconds(1); //We have to wait because of iOS troubles while loading dll
         IsInit = InitializeTracker();
-        Debug.Log("Init Tracker End");
-        yield return new WaitForSeconds(10);
-        Debug.Log("Init CamInfo Start");
+        yield return new WaitForSeconds(1);
         VisageTrackerApi.UpdateCameraInfo();
-        Debug.Log("Init CamInfo End");
         if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.OpenGLCore)
             Debug.Log("Notice: if graphics API is set to OpenGLCore, the texture might not get properly updated.");
     }
