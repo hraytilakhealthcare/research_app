@@ -131,7 +131,7 @@ public static class VisageTrackerApi
             Rotation = new Vector3(
                 -rotationCoords[0] * Mathf.Rad2Deg,
                 -rotationCoords[1] * Mathf.Rad2Deg * mirrorFactor,
-                rotationCoords[2] * mirrorFactor
+                rotationCoords[2] * Mathf.Rad2Deg * mirrorFactor
             ),
             LeftEyeOpening = eyesClosure[0],
             RightEyeOpening = eyesClosure[1]
