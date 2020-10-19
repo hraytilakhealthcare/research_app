@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using UnityEngine;
 using UnityEngine.Profiling;
-
 #if PLATFORM_ANDROID
 using UnityEngine.Android;
 
@@ -18,13 +17,14 @@ public static class VisageTrackerApi
     private const string ConfigFolder = "Visage Tracker";
     private const string ConfigFileName = "Head Tracker.cfg";
     private const int FaceCount = 1;
+    private const int FaceIndex = 0;
     private const string LicenseFileName = "license.vlc";
 
     #region API
 
     public static bool IsInit { get; private set; }
     public static CameraInfo LastCameraInfo { get; set; }
-    public static HeadTransform LastHeadTransform { get; set; }
+    public static HeadInfo LastHeadInfo { get; set; }
     public static TrackerStatus Status { get; set; }
 
     public static void Init()
@@ -67,13 +67,15 @@ public static class VisageTrackerApi
         Profiler.EndSample();
 
         Status = GetTrackerStatus();
-        LastHeadTransform = GetHeadTransform();
+        LastHeadInfo = GetHeadInfo();
     }
 
-    public struct HeadTransform
+    public struct HeadInfo
     {
         public Vector3 Position;
         public Vector3 Rotation;
+        public float LeftEyeOpening; //[0-1] Range. 0 is fully closed
+        public float RightEyeOpening; //[0-1] Range. 0 is fully closed
     }
 
     public struct TrackerStatus
@@ -109,14 +111,17 @@ public static class VisageTrackerApi
 
     #endregion
 
-    private static HeadTransform GetHeadTransform()
+    private static HeadInfo GetHeadInfo()
     {
         float[] positionCoords = new float[3];
         float[] rotationCoords = new float[3];
-        VisageTrackerNative._getHeadTranslation(positionCoords, 0);
-        VisageTrackerNative._getHeadRotation(rotationCoords, 0);
+        float[] eyesClosure = new float[2];
+        VisageTrackerNative._getHeadTranslation(positionCoords, FaceIndex);
+        VisageTrackerNative._getHeadRotation(rotationCoords, FaceIndex);
+        VisageTrackerNative._getEyeClosure(eyesClosure, FaceIndex);
+
         int mirrorFactor = Application.platform == RuntimePlatform.WindowsPlayer ? -1 : 1;
-        return new HeadTransform
+        return new HeadInfo
         {
             Position = new Vector3(
                 -positionCoords[0],
@@ -127,7 +132,9 @@ public static class VisageTrackerApi
                 -rotationCoords[0] * Mathf.Rad2Deg,
                 -rotationCoords[1] * Mathf.Rad2Deg * mirrorFactor,
                 rotationCoords[2] * mirrorFactor
-            )
+            ),
+            LeftEyeOpening = eyesClosure[0],
+            RightEyeOpening = eyesClosure[1]
         };
     }
 
@@ -138,7 +145,7 @@ public static class VisageTrackerApi
         VisageTrackerNative._getTrackerStatus(tStatus);
         return new TrackerStatus
         {
-            Quality = VisageTrackerNative._getTrackingQuality(0),
+            Quality = VisageTrackerNative._getTrackingQuality(FaceIndex),
             FrameRate = VisageTrackerNative._getFrameRate(),
             TrackingStatus = (TrackStatus) tStatus[0]
         };

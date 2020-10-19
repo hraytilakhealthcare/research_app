@@ -17,22 +17,22 @@ public class VisagePosition : MonoBehaviour
 
     private void Update()
     {
-        VisageTrackerApi.HeadTransform headTransform = VisageTrackerApi.LastHeadTransform;
-        MoveTo(headTransform, tracker.Smoothing);
-        UpdateDistanceDisplay(headTransform);
+        VisageTrackerApi.HeadInfo headInfo = VisageTrackerApi.LastHeadInfo;
+        MoveTo(headInfo, tracker.Smoothing);
+        UpdateDistanceDisplay(headInfo);
     }
 
-    private void MoveTo(VisageTrackerApi.HeadTransform headTransform, float smoothTime)
+    private void MoveTo(VisageTrackerApi.HeadInfo headInfo, float smoothTime)
     {
         Vector3 position = Vector3.SmoothDamp(
             transform.position,
-            headTransform.Position,
+            headInfo.Position,
             ref linearVelocity,
             smoothTime
         );
         currentRotation = SmoothDampAsAngle(
             currentRotation,
-            headTransform.Rotation,
+            headInfo.Rotation,
             ref angularVelocity,
             smoothTime
         );
@@ -49,9 +49,9 @@ public class VisagePosition : MonoBehaviour
     }
 
 
-    private void UpdateDistanceDisplay(VisageTrackerApi.HeadTransform headTransform)
+    private void UpdateDistanceDisplay(VisageTrackerApi.HeadInfo headInfo)
     {
-        float distance = headTransform.Position.magnitude;
+        float distance = headInfo.Position.magnitude;
         textMesh.text = $"{distance:0.00}";
         textMesh.color = IsRightRange(distance) ? Color.green : Color.red;
     }
