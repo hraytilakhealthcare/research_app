@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
-
 #if PLATFORM_ANDROID && UNITY_2018_3_OR_NEWER
 using System.IO;
 using UnityEngine.Android;
@@ -63,6 +62,7 @@ public class Tracker : MonoBehaviour
         IsInit = InitializeTracker();
         yield return new WaitForSeconds(1);
         VisageTrackerApi.UpdateCameraInfo();
+        CameraViewMaterial.shader = VisageTrackerApi.GetShaderForPlatform();
         if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.OpenGLCore)
             Debug.Log("Notice: if graphics API is set to OpenGLCore, the texture might not get properly updated.");
     }
