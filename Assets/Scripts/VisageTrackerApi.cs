@@ -27,6 +27,8 @@ public static class VisageTrackerApi
     public static HeadInfo LastHeadInfo { get; set; }
     public static TrackerStatus Status { get; set; }
 
+    public static bool IsMirrored => IsMirroredPlatform(Application.platform);
+
     public static void Init()
     {
         IsInit = AskCameraPermission() && ActivateLicense() && InitFromConfigFile() && OpenCamera();
@@ -38,6 +40,7 @@ public static class VisageTrackerApi
     }
 
     /// <returns>returns specific shader with correct pixel ordering</returns>
+    /// TODO: here
     public static Shader GetShaderForPlatform()
     {
         // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
@@ -74,8 +77,8 @@ public static class VisageTrackerApi
     {
         public Vector3 Position;
         public Vector3 Rotation;
-        public float LeftEyeOpening; //[0-1] Range. 0 is fully closed
-        public float RightEyeOpening; //[0-1] Range. 0 is fully closed
+        public bool LeftEyeOpening; //[0-1] Range. 0 is fully closed
+        public bool RightEyeOpening; //[0-1] Range. 0 is fully closed
     }
 
     public struct TrackerStatus
@@ -111,6 +114,13 @@ public static class VisageTrackerApi
 
     #endregion
 
+    private static bool IsMirroredPlatform(RuntimePlatform platform)
+    {
+        return platform == RuntimePlatform.WindowsEditor
+               || platform == RuntimePlatform.IPhonePlayer
+               || platform == RuntimePlatform.OSXPlayer;
+    }
+
     private static HeadInfo GetHeadInfo()
     {
         float[] positionCoords = new float[3];
@@ -120,11 +130,11 @@ public static class VisageTrackerApi
         VisageTrackerNative._getHeadRotation(rotationCoords, FaceIndex);
         VisageTrackerNative._getEyeClosure(eyesClosure, FaceIndex);
 
-        int mirrorFactor = Application.platform == RuntimePlatform.WindowsPlayer ? -1 : 1;
+        int mirrorFactor = IsMirrored ? -1 : 1;
         return new HeadInfo
         {
             Position = new Vector3(
-                -positionCoords[0],
+                -positionCoords[0] * mirrorFactor,
                 positionCoords[1],
                 positionCoords[2]
             ),
@@ -133,8 +143,8 @@ public static class VisageTrackerApi
                 -rotationCoords[1] * Mathf.Rad2Deg * mirrorFactor,
                 rotationCoords[2] * Mathf.Rad2Deg * mirrorFactor
             ),
-            LeftEyeOpening = eyesClosure[0],
-            RightEyeOpening = eyesClosure[1]
+            LeftEyeOpening = eyesClosure[0] >= 1,
+            RightEyeOpening = eyesClosure[1] >= 1
         };
     }
 
@@ -231,7 +241,6 @@ public static class VisageTrackerApi
         const int cameraId = 0;
         const int width = 800;
         const int height = 600;
-        const bool isMirrored = false;
         try
         {
 #if UNITY_ANDROID
@@ -246,7 +255,7 @@ public static class VisageTrackerApi
             VisageTrackerNative._openCamera(0, cameraId, width, height);
             return true;
 #else
-            VisageTrackerNative._openCamera(0, cameraId, width, height, 0);
+            VisageTrackerNative._openCamera(0, cameraId, width, height, IsMirrored ? 1 : 0);
             return true;
 #endif
         }
