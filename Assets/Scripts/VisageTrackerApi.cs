@@ -79,6 +79,8 @@ public static class VisageTrackerApi
         public Vector3 Rotation;
         public bool LeftEyeOpening; //[0-1] Range. 0 is fully closed
         public bool RightEyeOpening; //[0-1] Range. 0 is fully closed
+        public float IrisRadiusLeft { get; set; }
+        public float IrisRadiusRight { get; set; }
     }
 
     public struct TrackerStatus
@@ -126,9 +128,11 @@ public static class VisageTrackerApi
         float[] positionCoords = new float[3];
         float[] rotationCoords = new float[3];
         float[] eyesClosure = new float[2];
+        float[] irisRadius = new float[2];
         VisageTrackerNative._getHeadTranslation(positionCoords, FaceIndex);
         VisageTrackerNative._getHeadRotation(rotationCoords, FaceIndex);
         VisageTrackerNative._getEyeClosure(eyesClosure, FaceIndex);
+        VisageTrackerNative._getIrisRadius(irisRadius, FaceCount);
 
         int mirrorFactor = IsMirrored ? -1 : 1;
         return new HeadInfo
@@ -144,7 +148,9 @@ public static class VisageTrackerApi
                 rotationCoords[2] * Mathf.Rad2Deg * mirrorFactor
             ),
             LeftEyeOpening = eyesClosure[0] >= 1,
-            RightEyeOpening = eyesClosure[1] >= 1
+            RightEyeOpening = eyesClosure[1] >= 1,
+            IrisRadiusLeft = irisRadius[0],
+            IrisRadiusRight = irisRadius[1]
         };
     }
 

@@ -2,8 +2,6 @@ using System;
 using System.Collections;
 using System.Runtime.InteropServices;
 using UnityEngine;
-using UnityEngine.Assertions;
-using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 #if PLATFORM_ANDROID && UNITY_2018_3_OR_NEWER
 using System.IO;
@@ -18,17 +16,13 @@ public class Tracker : MonoBehaviour
 
     public float FrameAnalysisDelay { get; set; }
     public float Smoothing { get; private set; }
-    public bool IsInit { get; private set; }
-    public float Quality { get; private set; }
-    public float FPS { get; private set; }
-    private float Offset { get; set; }
 
     public float IPD
     {
         get => Application.isEditor ? 0 : VisageTrackerNative._getIPD();
         set
         {
-            if (Application.isEditor) VisageTrackerNative._setIPD(value);
+            if (!Application.isEditor) VisageTrackerNative._setIPD(value);
         }
     }
 
@@ -59,10 +53,12 @@ public class Tracker : MonoBehaviour
         Application.targetFrameRate = 60;
         //TODO: try to reduce durations and see what happens on iOS
         yield return new WaitForSeconds(1); //We have to wait because of iOS troubles while loading dll
-        IsInit = InitializeTracker();
+        InitializeTracker();
         yield return new WaitForSeconds(1);
         VisageTrackerApi.UpdateCameraInfo();
         CameraViewMaterial.shader = VisageTrackerApi.GetShaderForPlatform();
+        Debug.Log($"Active Shader : {CameraViewMaterial.shader}");
+        Debug.Log($"Mirror ? : {VisageTrackerApi.IsMirrored}");
         if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.OpenGLCore)
             Debug.Log("Notice: if graphics API is set to OpenGLCore, the texture might not get properly updated.");
     }
@@ -84,8 +80,6 @@ public class Tracker : MonoBehaviour
         VisageTrackerApi.TrackerStatus status = VisageTrackerApi.Status;
         VisageTrackerApi.CameraInfo info = VisageTrackerApi.LastCameraInfo;
 
-        Quality = status.Quality;
-        FPS = status.FrameRate;
         UpdateCameraFov(info);
 
         RefreshImage();
@@ -107,14 +101,8 @@ public class Tracker : MonoBehaviour
     private void OnApplicationPause(bool pauseStatus)
     {
         if (Application.platform != RuntimePlatform.OSXPlayer) return;
-        if (pauseStatus)
-        {
-            VisageTrackerApi.Release();
-        }
-        else
-        {
-            VisageTrackerApi.OpenCamera();
-        }
+        if (pauseStatus) VisageTrackerApi.Release();
+        else VisageTrackerApi.OpenCamera();
     }
 
     private bool InitializeTracker()
@@ -182,10 +170,6 @@ public class Tracker : MonoBehaviour
             {
                 case TrackerProperty.IPD:
                     return IPD;
-                case TrackerProperty.DistanceOffset:
-                    return Offset;
-                case TrackerProperty.FocalLenght:
-                    return CameraFocus;
                 case TrackerProperty.Smoothing:
                     return Smoothing;
                 case TrackerProperty.FrameAnalysisDelay:
@@ -200,12 +184,6 @@ public class Tracker : MonoBehaviour
             {
                 case TrackerProperty.IPD:
                     IPD = value;
-                    break;
-                case TrackerProperty.DistanceOffset:
-                    Offset = value;
-                    break;
-                case TrackerProperty.FocalLenght:
-                    CameraFocus = value;
                     break;
                 case TrackerProperty.Smoothing:
                     Smoothing = value;
@@ -222,7 +200,6 @@ public class Tracker : MonoBehaviour
 
     public void ResetValues()
     {
-        Offset = 0;
         Smoothing = 0.05f;
         frameSkipTimer.SetDuration(0);
         texture = null;

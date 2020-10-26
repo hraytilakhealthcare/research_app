@@ -6,6 +6,8 @@ public class VideoPlaneController : MonoBehaviour
     private float aspect;
     private float texCoordX;
     private float texCoordY;
+    private float yScale;
+    private float xScale;
 
     void Update()
     {
@@ -51,15 +53,13 @@ public class VideoPlaneController : MonoBehaviour
             // Adjust texture scale so the frame fits
             // Fixate so the the frame always fits by height
             aspect = imageSize.x / (float) imageSize.y;
-            float yScale = 100.0f;
-            float xScale = yScale * aspect;
+            yScale = 100.0f;
+            xScale = yScale * aspect;
             // NOTE: due to rotation on the VideoPlane yScale is applied on z coordinate
-
-            if (Application.platform == RuntimePlatform.WindowsEditor ||
-                Application.platform == RuntimePlatform.WindowsPlayer)
-                gameObject.transform.localScale = new Vector3(-xScale, 1.0f, yScale);
-            else
-                gameObject.transform.localScale = new Vector3(xScale, 1.0f, yScale);
         }
+
+        gameObject.transform.localScale = VisageTrackerApi.IsMirrored
+            ? new Vector3(-xScale, 1.0f, yScale)
+            : new Vector3(xScale, 1.0f, yScale);
     }
 }
