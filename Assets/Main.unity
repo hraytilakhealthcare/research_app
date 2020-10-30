@@ -657,11 +657,11 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
+  - {fileID: 194384946}
   - {fileID: 754750444}
   - {fileID: 2004196104}
   - {fileID: 1922613022}
   - {fileID: 977853733}
-  - {fileID: 194384946}
   m_Father: {fileID: 1044016016}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -903,7 +903,7 @@ GameObject:
   - component: {fileID: 194384946}
   - component: {fileID: 194384947}
   m_Layer: 5
-  m_Name: GameObject
+  m_Name: EyesWidget
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -923,7 +923,7 @@ RectTransform:
   - {fileID: 1661126509}
   - {fileID: 2053977834}
   m_Father: {fileID: 48506338}
-  m_RootOrder: 4
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -1584,7 +1584,7 @@ RectTransform:
   m_Children:
   - {fileID: 981909318}
   m_Father: {fileID: 48506338}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -1923,7 +1923,7 @@ RectTransform:
   - {fileID: 1365878584}
   - {fileID: 586448079}
   m_Father: {fileID: 48506338}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -3084,8 +3084,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e53d9a44a7654c2fb22432c1d223c263, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentPixelSize: 0
-  isLeftEye: 1
+  isLeftEye: 0
 --- !u!1 &1710515995
 GameObject:
   m_ObjectHideFlags: 0
@@ -3500,7 +3499,7 @@ RectTransform:
   - {fileID: 769453432}
   - {fileID: 978309519}
   m_Father: {fileID: 48506338}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -3553,7 +3552,7 @@ RectTransform:
   - {fileID: 2112573010}
   - {fileID: 129077804}
   m_Father: {fileID: 48506338}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -3704,8 +3703,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e53d9a44a7654c2fb22432c1d223c263, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentPixelSize: 0
-  isLeftEye: 0
+  isLeftEye: 1
 --- !u!1 &2071318437
 GameObject:
   m_ObjectHideFlags: 0

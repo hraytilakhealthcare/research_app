@@ -29,7 +29,7 @@ public class InfoDisplay : MonoBehaviour
                              $"IPD:{tracker.IPD:0.000}m\n" +
                              $"DST:{VisageTrackerApi.LastHeadInfo.Position.magnitude:00.00}m\n" +
                              $"IMG:{cameraInfo.ImageSize.x}x{cameraInfo.ImageSize.y}px\n" +
-                             $"IrisRadius:{head.IrisRadiusLeft}px, {head.IrisRadiusRight}px\n" +
+                             $"IrisRadius:{head.IrisRadiusLeft:F1}px, {head.IrisRadiusRight:F1}px\n" +
                              $"Focal:{cameraInfo.FocalLenght}mm";
     }
 }

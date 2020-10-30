@@ -77,7 +77,6 @@ public class Tracker : MonoBehaviour
             frameSkipTimer.Reset();
         }
 
-        VisageTrackerApi.TrackerStatus status = VisageTrackerApi.Status;
         VisageTrackerApi.CameraInfo info = VisageTrackerApi.LastCameraInfo;
 
         UpdateCameraFov(info);
@@ -100,7 +99,6 @@ public class Tracker : MonoBehaviour
 
     private void OnApplicationPause(bool pauseStatus)
     {
-        if (Application.platform != RuntimePlatform.OSXPlayer) return;
         if (pauseStatus) VisageTrackerApi.Release();
         else VisageTrackerApi.OpenCamera();
     }
@@ -115,7 +113,7 @@ public class Tracker : MonoBehaviour
         CameraViewMaterial.shader = Shader.Find("Custom/BGRATex");
 #endif
         texture = null; //To force-rebuilding it
-        VisageTrackerApi.Init();
+        VisageTrackerApi.Init(true);
         return VisageTrackerApi.IsInit;
     }
 

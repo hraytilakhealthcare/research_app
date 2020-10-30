@@ -29,9 +29,12 @@ public static class VisageTrackerApi
 
     public static bool IsMirrored => IsMirroredPlatform(Application.platform);
 
-    public static void Init()
+    public static void Init(bool initAnalyser = false)
     {
         IsInit = AskCameraPermission() && ActivateLicense() && InitFromConfigFile() && OpenCamera();
+        withAnalyser = initAnalyser;
+        if (withAnalyser)
+            IsInit &= InitializeAnalyser(ComputeDataFilesPath());
     }
 
     public static void UpdateCameraInfo()
@@ -40,7 +43,6 @@ public static class VisageTrackerApi
     }
 
     /// <returns>returns specific shader with correct pixel ordering</returns>
-    /// TODO: here
     public static Shader GetShaderForPlatform()
     {
         // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
@@ -63,6 +65,7 @@ public static class VisageTrackerApi
         Profiler.EndSample();
     }
 
+
     public static void Track()
     {
         Profiler.BeginSample("track");
@@ -71,6 +74,8 @@ public static class VisageTrackerApi
 
         Status = GetTrackerStatus();
         LastHeadInfo = GetHeadInfo();
+
+        if (withAnalyser) VisageTrackerNative._prepareDataForAnalysis();
     }
 
     public struct HeadInfo
@@ -132,7 +137,7 @@ public static class VisageTrackerApi
         VisageTrackerNative._getHeadTranslation(positionCoords, FaceIndex);
         VisageTrackerNative._getHeadRotation(rotationCoords, FaceIndex);
         VisageTrackerNative._getEyeClosure(eyesClosure, FaceIndex);
-        VisageTrackerNative._getIrisRadius(irisRadius, FaceCount);
+        VisageTrackerNative._getIrisRadius(irisRadius, FaceIndex);
 
         int mirrorFactor = IsMirrored ? -1 : 1;
         return new HeadInfo
@@ -216,6 +221,7 @@ public static class VisageTrackerApi
 
 #if UNITY_ANDROID
     private static AndroidJavaObject androidCameraActivity;
+    private static bool withAnalyser;
 #endif
 
     private static bool InitFromConfigFile()
@@ -238,6 +244,17 @@ public static class VisageTrackerApi
             Debug.LogException(e);
             return false;
         }
+    }
+
+    // Initialize analyser with path to the data
+    // Path to the folder containing the VisageFaceAnalyser data file.s
+    private static bool InitializeAnalyser(string dataPath)
+    {
+        int isInitialized = VisageTrackerNative._initAnalyser(dataPath);
+
+        return (isInitialized & (int) VFA_FLAGS.VFA_AGE) == (int) VFA_FLAGS.VFA_AGE
+               && (isInitialized & (int) VFA_FLAGS.VFA_EMOTION) == (int) VFA_FLAGS.VFA_EMOTION
+               && (isInitialized & (int) VFA_FLAGS.VFA_GENDER) == (int) VFA_FLAGS.VFA_GENDER;
     }
 
     //Had to be public because iOS must explictely reopen the camera on resuming 
@@ -313,6 +330,21 @@ public static class VisageTrackerApi
                 return $"{Application.streamingAssetsPath}/{ConfigFolder}/{ConfigFileName}";
             default:
                 return $"{Application.streamingAssetsPath}/{ConfigFolder}/{ConfigFileName}";
+        }
+    }
+
+    private static string ComputeDataFilesPath()
+    {
+        switch (Application.platform)
+        {
+            default:
+                return $"{Application.streamingAssetsPath}/Visage Tracker/bdtsdata/LBF/vfadata";
+
+            case RuntimePlatform.Android:
+                return $"{Application.persistentDataPath}/bdtsdata/LBF/vfadata";
+
+            case RuntimePlatform.WindowsEditor:
+                return $"{Application.streamingAssetsPath}/Visage Tracker/bdtsdata/LBF/vfadata";
         }
     }
 

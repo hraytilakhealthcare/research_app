@@ -8,7 +8,7 @@ public enum FDPmember
 {
     x = 0,
     y = 1,
-    z = 2, 
+    z = 2,
     defined = 3,
     detected = 4,
     quality = 5
@@ -16,13 +16,16 @@ public enum FDPmember
 
 public class FDP
 {
-    private Dictionary<KeyValuePair<int, int>, float[]> featurePoints = new Dictionary<KeyValuePair<int, int>, float[]>();
+    private Dictionary<KeyValuePair<int, int>, float[]> featurePoints =
+        new Dictionary<KeyValuePair<int, int>, float[]>();
+
+    private int length;
 
     public void Fill(float[] rawFDP)
     {
         int FP_START_GROUP_INDEX = VisageTrackerNative._getFP_START_GROUP_INDEX();
         int FP_END_GROUP_INDEX = VisageTrackerNative._getFP_END_GROUP_INDEX();
-        int length = FP_END_GROUP_INDEX - FP_START_GROUP_INDEX + 1;
+        length = FP_END_GROUP_INDEX - FP_START_GROUP_INDEX + 1;
         int[] groupSizes = new int[length];
         VisageTrackerNative._getGroupSizes(groupSizes, length);
 
@@ -35,14 +38,14 @@ public class FDP
 
                 float[] featurePoint = new float[6]
                 {
-                    rawFDP[bufferIndex    ],
+                    rawFDP[bufferIndex],
                     rawFDP[bufferIndex + 1],
                     rawFDP[bufferIndex + 2],
-                    (int)rawFDP[bufferIndex + 3],
-                    (int)rawFDP[bufferIndex + 4],
+                    (int) rawFDP[bufferIndex + 3],
+                    (int) rawFDP[bufferIndex + 4],
                     rawFDP[bufferIndex + 5]
                 };
-           
+
                 bufferIndex += 6;
 
                 if (!featurePoints.ContainsKey(groupIndex))
@@ -73,7 +76,7 @@ public class FDP
     {
         int isDef;
         KeyValuePair<int, int> groupIndex = new KeyValuePair<int, int>(group, index);
-        isDef = (int)featurePoints[groupIndex][(int)FDPmember.defined];
+        isDef = (int) featurePoints[groupIndex][(int) FDPmember.defined];
         return isDef;
     }
 
@@ -81,17 +84,23 @@ public class FDP
     {
         int isDet;
         KeyValuePair<int, int> groupIndex = new KeyValuePair<int, int>(group, index);
-        isDet = (int)featurePoints[groupIndex][(int)FDPmember.detected];
+        isDet = (int) featurePoints[groupIndex][(int) FDPmember.detected];
         return isDet;
     }
 
-    // quality information returned exclusively with _getAllFeaturePoints2D and _getFeaturePoints2D functions. 
+    // quality information returned exclusively with _getAllFeaturePoints2D and _getFeaturePoints2D functions.
     public float getFPQuality(int group, int index)
     {
         float qual;
         KeyValuePair<int, int> groupIndex = new KeyValuePair<int, int>(group, index);
-        qual = featurePoints[groupIndex][(int)FDPmember.quality];
+        qual = featurePoints[groupIndex][(int) FDPmember.quality];
         return qual;
-    } 
-}
+    }
 
+    public override string ToString()
+    {
+        string test = $"defined:{FPIsDefined(3, 5)}:{FPIsDefined(3, 6)}\n" +
+                      $"detected:{FPIsDetected(3, 5)}:{FPIsDetected(3, 6)}";
+        return $"{featurePoints.Count}points or {length} \n {test}";
+    }
+}

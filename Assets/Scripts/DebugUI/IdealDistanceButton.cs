@@ -6,7 +6,11 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Button))]
 public class IdealDistanceButton : MonoBehaviour
 {
-    [SerializeField] private float currentPixelSize;
+    private float CurrentPixelSize =>
+        isLeftEye
+            ? VisageTrackerApi.LastHeadInfo.IrisRadiusLeft
+            : VisageTrackerApi.LastHeadInfo.IrisRadiusRight;
+
     [SerializeField] private bool isLeftEye;
     private ButtonStep currentStep;
     private Button button;
@@ -35,14 +39,34 @@ public class IdealDistanceButton : MonoBehaviour
     private void Update()
     {
         textComponent.text = ComputeText();
+        button.image.color = ComputeColor();
     }
 
     private string ComputeText()
     {
-        bool hasLimitsSet = minIrisSize > 0 && maxIrisSize > 0;
-        return hasLimitsSet
-            ? $"Press to {currentStep}\n{currentPixelSize}px({ComputeDistance()}cm)"
-            : $"Press to {currentStep}\n{currentPixelSize}px";
+        return HasLimitsSet()
+            ? $"Press to {currentStep}\nsize:{CurrentPixelSize:F1}px(dst:{ComputeDistance():F1}cm)"
+            : $"Press to {currentStep}\nsize:{CurrentPixelSize:F1}px";
+    }
+
+    private Color ComputeColor()
+    {
+        if (!HasLimitsSet())
+            return Color.gray;
+
+        return IsAtRange() ? Color.green : Color.red;
+    }
+
+    private bool IsAtRange()
+    {
+        float distance = ComputeDistance();
+        bool isAtRange = distance >= MinDistance && distance <= MaxDistance;
+        return isAtRange;
+    }
+
+    private bool HasLimitsSet()
+    {
+        return minIrisSize > 0 && maxIrisSize > 0;
     }
 
     private float ComputeDistance()
@@ -50,7 +74,7 @@ public class IdealDistanceButton : MonoBehaviour
         float min = Mathf.Min(minIrisSize, maxIrisSize);
         float max = Mathf.Max(minIrisSize, maxIrisSize);
         float range = max - min;
-        float normalized = (currentPixelSize - min) / range;
+        float normalized = (CurrentPixelSize - min) / range;
         return normalized * ValidRange + MinDistance;
     }
 
@@ -59,10 +83,10 @@ public class IdealDistanceButton : MonoBehaviour
         switch (currentStep)
         {
             case ButtonStep.SaveMax:
-                maxIrisSize = currentPixelSize;
+                maxIrisSize = CurrentPixelSize;
                 break;
             case ButtonStep.SaveMin:
-                minIrisSize = currentPixelSize;
+                minIrisSize = CurrentPixelSize;
                 break;
             case ButtonStep.Reset:
                 maxIrisSize = 0;
