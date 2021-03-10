@@ -88,8 +88,8 @@ public class Tracker : MonoBehaviour
     {
         float aspect = info.ImageSize.x / (float) info.ImageSize.y;
         float yRange = info.ImageSize.x > info.ImageSize.y ? 1.0f : 1.0f / aspect;
-        float fov = Camera.main.fieldOfView = Mathf.Rad2Deg * 2.0f * Mathf.Atan((float) (yRange / info.FocalLenght));
-        Debug.Log($"Setting fov to {fov}");
+        // float fov = Camera.main.fieldOfView = Mathf.Rad2Deg * 2.0f * Mathf.Atan((float) (yRange / info.FocalLenght));
+        // Debug.Log($"Setting fov to {fov}");
     }
 
     private void OnDestroy()

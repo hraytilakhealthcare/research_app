@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(Text))]
 // ReSharper disable once InconsistentNaming
 public class InfoDisplay : MonoBehaviour
 {
@@ -21,7 +20,6 @@ public class InfoDisplay : MonoBehaviour
         VisageTrackerApi.CameraInfo cameraInfo = VisageTrackerApi.LastCameraInfo;
         VisageTrackerApi.TrackerStatus status = VisageTrackerApi.Status;
         VisageTrackerApi.HeadInfo head = VisageTrackerApi.LastHeadInfo;
-        Debug.Log($"({head.LeftEyeOpening},{head.RightEyeOpening})");
         textComponent.text = $"Init:{VisageTrackerApi.IsInit}\t" +
                              $"Status:{status.TrackingStatus}\n" +
                              $"Quality:{status.Quality:P0}\n" +

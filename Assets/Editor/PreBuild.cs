@@ -34,6 +34,7 @@ class MyCustomBuildProcessor : IPreprocessBuildWithReport
             if (!Directory.Exists("Assets/StreamingAssets/Visage Tracker"))
                 Directory.CreateDirectory("Assets/StreamingAssets/Visage Tracker");
 
+            //TODO: check if it is necessary to keep this file
             CopyDirIfNotExists("../../data/bdtsdata", "Assets/StreamingAssets/Visage Tracker/bdtsdata");
             CopyFileIfNotExists("../../data/Facial Features Tracker - High.cfg", "Assets/StreamingAssets/Visage Tracker/Facial Features Tracker - High.cfg");
             CopyFileIfNotExists("../../data/Head Tracker.cfg", "Assets/StreamingAssets/Visage Tracker/Head Tracker.cfg");
@@ -67,7 +68,7 @@ class MyCustomBuildProcessor : IPreprocessBuildWithReport
             CopyFileIfNotExists("../../Android/AndroidCameraPlugin/app/release/AndroidCameraPlugin.jar", "Assets/Plugins/Android/AndroidCameraPlugin.jar");
             CopyFileIfNotExists("../../Android/AndroidCameraPlugin/app/release/AndroidManifest.xml", "Assets/Plugins/Android/AndroidManifest.xml"); 
         }
-    AssetDatabase.Refresh();
+        AssetDatabase.Refresh();
 	}
 }
 #endif
