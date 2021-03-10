@@ -97,9 +97,10 @@ public class Tracker : MonoBehaviour
         VisageTrackerApi.Release();
     }
 
-    private void OnApplicationPause(bool pauseStatus)
+    private void OnApplicationPause(bool pausing)
     {
-        if (pauseStatus) VisageTrackerApi.Release();
+        if (!VisageTrackerApi.IsInit) return;
+        if (pausing) VisageTrackerApi.Release();
         else VisageTrackerApi.OpenCamera();
     }
 
